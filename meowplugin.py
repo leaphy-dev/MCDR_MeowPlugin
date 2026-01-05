@@ -16,6 +16,8 @@ PLUGIN_METADATA = {
     }
 }
 
+message_suffix:str = "喵~"
+
 class MeowHandler(BukkitHandler):
     def __init__(self,server=None,*args,**kwargs):
         self.server: PluginServerInterface | None = server
@@ -30,11 +32,20 @@ class MeowHandler(BukkitHandler):
             return m["name"], m["message"]
         else:
             return None
+    @staticmethod
+    def remove_command_msg_suffix(msg:str, suffix:str):
+        if msg.startswith("!!"):
+            return msg[0:len(msg)-len(suffix)]
+        else:
+            return msg
 
     def parse_server_stdout(self, text: str):
         info: MCDR_info = super().parse_server_stdout(text)
         if not info.player:
             info.player, info.content = self.handel_player_prefix(info.content)
+
+        if info.is_player:
+            info.content = self.remove_command_msg_suffix(info.content, message_suffix)
 
         return info
 
