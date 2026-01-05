@@ -23,8 +23,11 @@ class MeowHandler(BukkitHandler):
     def get_name(self) -> str:
         return PLUGIN_METADATA["name"]
 
-    def handle_player_prefix(self,info:MCDR_info) -> (str,str):
-        m = re.fullmatch(r'<\[\w+](?P<name>[^>]+)> (?P<message>.*)', info.content)
+    def handle_player_prefix(self, info: MCDR_info) -> (str, str):
+        # 使用更灵活的正则表达式，[Not Secure] 前缀可选
+        pattern = r'(?:\[Not Secure\]\s*)?<\[\w+](?P<name>[^>]+)> (?P<message>.*)'
+        m = re.fullmatch(pattern, info.content)
+
         if m is not None and self._verify_player_name(m["name"]):
             info.player = m["name"]
             info.content = m["message"]
@@ -59,4 +62,5 @@ def on_load(server:PluginServerInterface, prev_module):
 def on_user_info(server: PluginServerInterface, info: Info):
     keywords = ("meow", "miao", "喵喵喵")
     if info.content.lower().startswith(keywords):
+
         server.say(random_meow_word())
