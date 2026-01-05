@@ -49,5 +49,5 @@ def on_load(server:PluginServerInterface, prev_module):
 
 def on_user_info(server: PluginServerInterface, info: Info):
     keywords = ("meow", "miao", "喵喵喵")
-    if info.content.lower() in keywords:
+    if info.content.lower().startswith(keywords):
         server.say(random_meow_word())
