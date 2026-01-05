@@ -16,7 +16,7 @@ PLUGIN_METADATA = {
     }
 }
 
-message_suffix:str = "喵~"
+message_suffix:str = ""
 
 class MeowHandler(BukkitHandler):
 
@@ -24,12 +24,11 @@ class MeowHandler(BukkitHandler):
         return PLUGIN_METADATA["name"]
 
     def handle_player_prefix(self,info:MCDR_info) -> (str,str):
-        if info.player:
-            return
         m = re.fullmatch(r'<\[\w+](?P<name>[^>]+)> (?P<message>.*)', info.content)
         if m is not None and self._verify_player_name(m["name"]):
             info.player = m["name"]
             info.content = m["message"]
+        return info
 
     @staticmethod
     def remove_command_msg_suffix(msg:str, suffix:str):
@@ -41,7 +40,7 @@ class MeowHandler(BukkitHandler):
     def parse_server_stdout(self, text: str):
         info: MCDR_info = super().parse_server_stdout(text)
         if not info.player:
-            self.handle_player_prefix(info)
+            info = self.handle_player_prefix(info) # dataclass可哈希
 
         if info.is_player:
             info.content = self.remove_command_msg_suffix(info.content, message_suffix)
