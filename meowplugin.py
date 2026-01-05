@@ -29,7 +29,7 @@ class MeowHandler(BukkitHandler):
         m = re.fullmatch(r'<\[\w+](?P<name>[^>]+)> (?P<message>.*)', info.content)
         if m is not None and self._verify_player_name(m["name"]):
             info.player = m["name"]
-            info.content = m["content"]
+            info.content = m["message"]
 
     @staticmethod
     def remove_command_msg_suffix(msg:str, suffix:str):
