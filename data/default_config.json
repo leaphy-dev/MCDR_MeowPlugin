@@ -1,0 +1,13 @@
+{
+    "config_version":0,
+    "enable": true,
+    "msg_suffix":"",
+    "random_sentence_files": [
+      {
+        "file_name": "meow.txt",
+        "enable": true,
+        "trigger_regex": "^(meow|miao|喵喵喵)",
+        "priority": 0
+      }
+    ]
+}

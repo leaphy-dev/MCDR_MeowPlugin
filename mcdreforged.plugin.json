@@ -1,0 +1,10 @@
+{
+  "id": "meow_handler",
+  "version": "0.0.1",
+  "name": "Meow Plugin",
+  "author": "leaphy",
+  "description": {
+    "en_us": "Meow Plugin",
+    "zh_cn": "MCDR喵喵插件"
+  }
+}
