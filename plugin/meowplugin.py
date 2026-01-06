@@ -17,7 +17,7 @@ class MeowHandler(BukkitHandler):
         self.server = server
         self.config = config
     def get_name(self) -> str:
-        return "MeowHandler"
+        return "meow_handler"
 
     def handle_player_prefix(self, info: MCDR_info) -> (str, str):
         # 使用更灵活的正则表达式，[Not Secure] 前缀可选
@@ -86,7 +86,3 @@ class MeowPlugin(object):
                 random_line = linecache.getline(str(file), random.randint(1, i.get("lines")))
                 self.server.say(random_line.strip())
                 return
-
-def on_load(server:PluginServerInterface, prev_module):
-    plugin = MeowPlugin(server)
-    server.logger.info('Meow Plugin loaded!')
