@@ -1,6 +1,6 @@
 from mcdreforged import PluginServerInterface
 
-from plugin.meowplugin import MeowPlugin
+from meow_plugin.meowplugin import MeowPlugin
 
 
 def on_load(server:PluginServerInterface, prev_module):
