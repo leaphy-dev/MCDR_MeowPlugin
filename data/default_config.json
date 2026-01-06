@@ -9,5 +9,9 @@
         "trigger_regex": "^(meow|miao|喵喵喵)",
         "priority": 0
       }
+    ],
+      "resources": [
+        "lang",
+        "data"
     ]
 }

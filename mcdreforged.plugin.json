@@ -9,6 +9,6 @@
   },
       "resources": [
         "lang",
-        "__main__.py"
+        "data"
     ]
 }

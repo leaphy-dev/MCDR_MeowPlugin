@@ -9,7 +9,7 @@ from mcdreforged.handler.impl import BukkitHandler
 from mcdreforged.api.types import *
 from mcdreforged.info_reactor.info import Info as MCDR_info
 
-from config_parser import MeowConfigParser
+from meow_plugin.config_parser import MeowConfigParser
 
 
 class MeowHandler(BukkitHandler):
@@ -60,6 +60,8 @@ class MeowPlugin(object):
 
         self._init_random_sentence()
 
+        self.server.register_event_listener(MCDRPluginEvents.USER_INFO,callback=self.random_meow_sentence)
+
     def _init_random_sentence(self):
         self.random_meow_sentence_data = []
         for f in self.config.get("random_sentence_files", tuple()):
@@ -76,7 +78,7 @@ class MeowPlugin(object):
                 except re.error as e:
                     self.server.logger.warning(f"Invalid regex: {e}")
 
-    @event_listener(MCDRPluginEvents.USER_INFO)
+    # @event_listener(MCDRPluginEvents.USER_INFO)
     def random_meow_sentence(self, _, msg: Info) -> None:
         content = msg.content
 

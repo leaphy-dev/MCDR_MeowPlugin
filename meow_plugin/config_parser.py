@@ -1,12 +1,12 @@
 import json
 import pathlib
-from typing import Dict
+from typing import Dict, TYPE_CHECKING
 
-from mcdreforged.plugin.si.server_interface import PluginServerInterface
-
+if TYPE_CHECKING:
+    from mcdreforged.plugin.si.server_interface import PluginServerInterface
 
 class MeowConfigParser(object):
-    def __init__(self, server_interface: PluginServerInterface):
+    def __init__(self, server_interface: "PluginServerInterface"):
 
         self.server_interface = server_interface
         self._load_config_file()
