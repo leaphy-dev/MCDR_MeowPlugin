@@ -4,10 +4,11 @@ import re
 import linecache
 from typing import Dict, List
 
-from mcdreforged import event_listener, MCDRPluginEvents
+from mcdreforged import MCDRPluginEvents
 from mcdreforged.handler.impl import BukkitHandler
 from mcdreforged.api.types import *
 from mcdreforged.info_reactor.info import Info as MCDR_info
+from mcdreforged.api.command import  SimpleCommandBuilder
 
 from meow_plugin.config_parser import MeowConfigParser
 
@@ -56,11 +57,17 @@ class MeowPlugin(object):
         self.handler = MeowHandler(server = self.server, config=self.config)
         self.server.register_server_handler(self.handler)
 
+        self.command_prefix = self.config.get("command_prefix", "!!meow")
+        self.command_builder = SimpleCommandBuilder()
+        self.register_commands()
+        self.command_builder.register(self.server)
+
         self.random_meow_sentence_data: List[Dict] = []
-
         self._init_random_sentence()
-
         self.server.register_event_listener(MCDRPluginEvents.USER_INFO,callback=self.random_meow_sentence)
+
+    def __str__(self):
+        return  self.server.get_self_metadata().name + "@" +str(self.server.get_self_metadata().version)
 
     def _init_random_sentence(self):
         self.random_meow_sentence_data = []
@@ -88,3 +95,24 @@ class MeowPlugin(object):
                 random_line = linecache.getline(str(file), random.randint(1, i.get("lines")))
                 self.server.say(random_line.strip())
                 return
+
+    def meow_command(self,command:str):
+        _flag = False
+        command = command.strip()
+        if not command.startswith(self.command_prefix):
+            command = self.command_prefix + " " + command
+        def decorator(func):
+            nonlocal _flag
+            def wrapper(*args, **kwargs):
+                return func(*args, **kwargs)
+            if not _flag:
+                self.command_builder.command(command, func)
+                _flag = True
+            return wrapper
+        return decorator
+
+    def register_commands(self):
+
+        @self.meow_command(command="!!meow about")
+        def about_command(source: CommandSource):
+            source.reply(str(self))
