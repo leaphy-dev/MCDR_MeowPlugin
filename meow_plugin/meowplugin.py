@@ -21,13 +21,17 @@ class MeowHandler(BukkitHandler):
         return "meow_handler"
 
     def handle_player_prefix(self, info: MCDR_info) -> (str, str):
-        # 使用更灵活的正则表达式，[Not Secure] 前缀可选
-        pattern = r'(?:\[Not Secure\]\s*)?<\[\w+](?P<name>[^>]+)> (?P<message>.*)'
+        # 同时支持 <[标签]名字> 和 [标签]<名字> 两种格式
+        pattern = r'(?:\[Not Secure\]\s*)?(?:<\[\w+\](?P<name1>[^>]+)>|\[\w+\]<(?P<name2>[^>]+)>)\s+(?P<message>.*)'
         m = re.fullmatch(pattern, info.content)
 
-        if m is not None and self._verify_player_name(m["name"]):
-            info.player = m["name"]
-            info.content = m["message"]
+        if m is not None:
+            # 检查哪种格式匹配到了
+            name = m.group("name1") if m.group("name1") else m.group("name2")
+
+            if self._verify_player_name(name):
+                info.player = name
+                info.content = m.group("message")
         return info
 
     @staticmethod
@@ -63,6 +67,7 @@ class MeowPlugin(object):
         self.command_builder.register(self.server)
 
         self.random_meow_sentence_data: List[Dict] = []
+        self.total_random_sentences: int = 0
         self._init_random_sentence()
         self.server.register_event_listener(MCDRPluginEvents.USER_INFO,callback=self.random_meow_sentence)
 
@@ -71,6 +76,7 @@ class MeowPlugin(object):
 
     def _init_random_sentence(self):
         self.random_meow_sentence_data = []
+        self.total_random_sentences = 0
         for f in self.config.get("random_sentence_files", tuple()):
             if f.get("file_name", "") and f.get("enable") and f.get("trigger_regex"):
                 try:
@@ -78,14 +84,21 @@ class MeowPlugin(object):
 
                     file_path = pathlib.Path(self.server.get_data_folder()) / f.get("file_name")
                     with open(file_path, 'r', encoding='utf-8') as fp:
-                        f["lines"] = sum(1 for _ in fp)
+                        lines = sum(1 for _ in fp)
+                        f["lines"] = lines
+                        self.total_random_sentences += lines
 
                     self.random_meow_sentence_data.append(f)
                     self.random_meow_sentence_data.sort(key=lambda i: i.get("priority", 100))
+
+                    self.server.logger.info(
+                        f"Random meow sentences loaded: "
+                        f"{len(self.random_meow_sentence_data)} files, "
+                        f"{self.total_random_sentences} sentences in total"
+                    )
                 except re.error as e:
                     self.server.logger.warning(f"Invalid regex: {e}")
 
-    # @event_listener(MCDRPluginEvents.USER_INFO)
     def random_meow_sentence(self, _, msg: Info) -> None:
         content = msg.content
 
@@ -96,7 +109,7 @@ class MeowPlugin(object):
                 self.server.say(random_line.strip())
                 return
 
-    def meow_command(self,command:str):
+    def meow_command_register(self, command:str):
         _flag = False
         command = command.strip()
         if not command.startswith(self.command_prefix):
@@ -113,6 +126,19 @@ class MeowPlugin(object):
 
     def register_commands(self):
 
-        @self.meow_command(command="!!meow about")
+        @self.meow_command_register(command="!!meow about")
         def about_command(source: CommandSource):
             source.reply(str(self))
+
+        @self.meow_command_register(command="!!meow help")
+        def help_command(source: CommandSource):
+            source.reply(f"==={str(self)}===\n"
+                f"Random meow sentences loaded: "
+                f"{len(self.random_meow_sentence_data)} files, "
+                f"{self.total_random_sentences} sentences in total."
+                f"Use '{self.command_prefix} reload' to reload the file(s).")
+
+        @self.meow_command_register(command="!!meow")
+        def root_command(source: CommandSource):
+            return help_command(source)
+
